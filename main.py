@@ -42,3 +42,22 @@ def addFriend(userName: str, data: list):
       """
       for friend in data:
         session.run(query, userName = userName, friendName = friend)
+
+@app.put("/users/{name}")
+def updateUser(name: str, data: dict):
+   with driver.session() as session:
+      query = """
+        MATCH (u:User {name: $findName})
+        SET u.name = $name, 
+            u.age = $age
+        RETURN u;
+      """
+      result = session.run(query, findName = name, **data)
+      return [ r['u'] for r in result ][0]
+   
+@app.delete("/users/{name}")
+def deleteUser(name: str):
+   with driver.session() as session:
+      query = "MATCH (u:User {name: $findName}) DELETE u;"
+      result = session.run(query, findName = name)
+      return Response(status_code=204)
